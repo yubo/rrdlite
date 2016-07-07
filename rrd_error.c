@@ -172,10 +172,10 @@ const char *rrd_strerror(int err) {
 		return NULL;
 	}else{
 		if (e >= RRD_ERR_START &&  e <= RRD_ERR_END){
-			printf("errno: 0x%04x, str:%s\n", e, rrd_err_text[e-RRD_ERR_START]);
+			/*printf("errno: 0x%04x, str:%s\n", e, rrd_err_text[e-RRD_ERR_START]);*/
 			return rrd_err_text[e-RRD_ERR_START];
 		}else{
-			printf("errno: 0x%04x, str:%s\n", e, rrd_err_text[RRD_ERR_UNKNOWN_ERROR-RRD_ERR_START]);
+			/*printf("errno: 0x%04x, str:%s\n", e, rrd_err_text[RRD_ERR_UNKNOWN_ERROR-RRD_ERR_START]);*/
 			return rrd_err_text[RRD_ERR_UNKNOWN_ERROR-RRD_ERR_START];
 		}
 	}
