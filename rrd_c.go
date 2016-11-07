@@ -1,11 +1,15 @@
+/*
+ *Copyright 2016 yubo. All rights reserved.
+ * Use of this source code is governed by a BSD-style
+ * license that can be found in the LICENSE file.
+ */
 package rrdlite
 
 /*
 #include <stdlib.h>
 #include "rrd.h"
 #include "rrdfunc.h"
-#cgo linux CFLAGS: -std=c99 -DRRD_LITE -D_BSD_SOURCE -DHAVE_CONFIG_H -D_POSIX_SOURCE -DNUMVERS=1.4009 -D_LINUX_OS
-#cgo darwin CFLAGS: -std=c99 -DRRD_LITE -D_BSD_SOURCE -DHAVE_CONFIG_H -D_POSIX_SOURCE -DNUMVERS=1.4009 -D_DARWIN_OS
+#cgo CFLAGS: -std=c99 -DRRD_LITE -D_BSD_SOURCE -DHAVE_CONFIG_H -D_POSIX_SOURCE -DNUMVERS=1.4009
 #cgo LDFLAGS: -lm
 */
 import "C"

@@ -176,6 +176,8 @@ rrd_file_t *rrd_open( const char *const file_name, rrd_t *rrd,
 			flags |= O_EXCL;
 		}
 	}
+
+#ifdef HAVE_MMAP
 	if (rdwr & RRD_READAHEAD) {
 #ifdef MAP_POPULATE
 		rrd_simple_file->mm_flags |= MAP_POPULATE;   /* populate ptes and data */
@@ -184,6 +186,8 @@ rrd_file_t *rrd_open( const char *const file_name, rrd_t *rrd,
 		rrd_simple_file->mm_flags |= MAP_NONBLOCK;   /* just populate ptes */
 #endif
 	}
+#endif
+
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__CYGWIN32__)
 	flags |= O_BINARY;
 #endif
@@ -193,8 +197,7 @@ rrd_file_t *rrd_open( const char *const file_name, rrd_t *rrd,
 		goto out_free;
 	}
 
-#ifdef HAVE_MMAP
-#ifdef HAVE_BROKEN_MS_ASYNC
+#if defined(HAVE_MMAP) && defined(HAVE_BROKEN_MS_ASYNC)
 	if (rdwr & RRD_READWRITE) {    
 		/* some unices, the files mtime does not get update    
 		   on msync MS_ASYNC, in order to help them,     
@@ -206,7 +209,6 @@ rrd_file_t *rrd_open( const char *const file_name, rrd_t *rrd,
 		utime(file_name,NULL);  
 	}
 #endif    
-#endif
 
 	/* Better try to avoid seeks as much as possible. stat may be heavy but
 	 * many concurrent seeks are even worse.  */
