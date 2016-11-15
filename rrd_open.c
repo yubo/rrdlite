@@ -38,7 +38,9 @@
 #endif
 
 /* DEBUG 2 prints information obtained via mincore(2) */
-#define DEBUG 1
+/* remove to rrd_c.go */
+/* #define DEBUG 1 */
+
 /* do not calculate exact madvise hints but assume 1 page for headers and
  * set DONTNEED for the rest, which is assumed to be data */
 /* Avoid calling madvise on areas that were already hinted. May be benefical if
@@ -58,6 +60,22 @@
 	offset += wanted; \
 }
 #else
+#ifdef USE_STDIO
+#define __rrd_read(dst, dst_t, cnt) { \
+	size_t wanted = sizeof(dst_t)*(cnt); \
+	size_t got; \
+	if ((dst = (dst_t*)malloc(wanted)) == NULL) { \
+		ret = -RRD_ERR_MALLOC6; \
+		goto out_nullify_head; \
+	} \
+	got = fread(dst, 1, wanted, rrd_simple_file->fp); \
+	if (got != wanted) { \
+		ret = -RRD_ERR_READ4; \
+		goto out_nullify_head; \
+	} \
+	offset += got; \
+}
+#else
 #define __rrd_read(dst, dst_t, cnt) { \
 	size_t wanted = sizeof(dst_t)*(cnt); \
 	size_t got; \
@@ -72,6 +90,7 @@
 	} \
 	offset += got; \
 }
+#endif
 #endif
 
 /* get the address of the start of this page */
@@ -197,6 +216,18 @@ rrd_file_t *rrd_open( const char *const file_name, rrd_t *rrd,
 		goto out_free;
 	}
 
+#ifdef USE_STDIO
+	if (rdwr & RRD_READWRITE) {
+		rrd_simple_file->fp = fdopen(rrd_simple_file->fd, "r+");
+	}else{
+		rrd_simple_file->fp = fdopen(rrd_simple_file->fd, "r");
+	}
+	if (rrd_simple_file->fp == NULL){
+		ret = -RRD_ERR_OPEN_FILE;
+		goto out_close;
+	}
+#endif
+
 #if defined(HAVE_MMAP) && defined(HAVE_BROKEN_MS_ASYNC)
 	if (rdwr & RRD_READWRITE) {    
 		/* some unices, the files mtime does not get update    
@@ -226,8 +257,9 @@ rrd_file_t *rrd_open( const char *const file_name, rrd_t *rrd,
 			goto no_lseek_necessary;        
 		}
 #endif
+
 		lseek(rrd_simple_file->fd, newfile_size - 1, SEEK_SET);
-		if ( write(rrd_simple_file->fd, "\0", 1) == -1){    /* poke */
+		if (write(rrd_simple_file->fd, "\0", 1) == -1){    /* poke */
 			ret = -RRD_ERR_WRITE5;
 			goto out_close;
 		}
@@ -394,8 +426,15 @@ out_close:
 	if (data != MAP_FAILED)
 		munmap(data, rrd_file->file_len);
 #endif
+#ifdef USE_STDIO
+	if (rrd_simple_file->fp)
+		fclose(rrd_simple_file->fp);
+	else
+		close(rrd_simple_file->fd);
 
+#else
 	close(rrd_simple_file->fd);
+#endif
 out_free:
 	free(rrd_file->pvt);
 	free(rrd_file);
@@ -565,12 +604,11 @@ void rrd_dontneed( rrd_file_t *rrd_file, rrd_t *rrd) {
 
 
 
-int rrd_close(
-		rrd_file_t *rrd_file)
-{
-	rrd_simple_file_t *rrd_simple_file;
-	rrd_simple_file = (rrd_simple_file_t *)rrd_file->pvt;
+int rrd_close(rrd_file_t *rrd_file) {
 	int       ret;
+	rrd_simple_file_t *rrd_simple_file;
+
+	rrd_simple_file = (rrd_simple_file_t *)rrd_file->pvt;
 
 #ifdef HAVE_MMAP
 	ret = msync(rrd_simple_file->file_start, rrd_file->file_len, MS_ASYNC);
@@ -584,7 +622,11 @@ int rrd_close(
 		goto out;
 	}
 #endif
+#ifdef USE_STDIO
+	ret = fclose(rrd_simple_file->fp);
+#else
 	ret = close(rrd_simple_file->fd);
+#endif
 	if (ret != 0){
 		ret = -RRD_ERR_CLOSE;
 		goto out;
@@ -614,7 +656,11 @@ off_t rrd_seek( rrd_file_t *rrd_file, off_t off, int whence) {
 	else if (whence == SEEK_END)
 		rrd_file->pos = rrd_file->file_len + off;
 #else
+#ifdef USE_STDIO
+	ret = fseek(rrd_simple_file->fp, off, whence);
+#else
 	ret = lseek(rrd_simple_file->fd, off, whence);
+#endif
 	rrd_file->pos = ret;
 #endif
 	/* mimic fseek, which returns 0 upon success */
@@ -660,8 +706,11 @@ ssize_t rrd_read(
 	return _cnt;
 #else
 	ssize_t   ret;
-
+#ifdef USE_STDIO
+	ret = (ssize_t)fread(buf, 1, count, rrd_simple_file->fp);
+#else
 	ret = read(rrd_simple_file->fd, buf, count);
+#endif
 	if (ret > 0)
 		rrd_file->pos += ret;   /* mimmic read() semantics */
 	return ret;
@@ -689,7 +738,13 @@ ssize_t rrd_write(rrd_file_t *rrd_file, const void *buf, size_t count){
 	rrd_file->pos += count;
 	return count;       /* mimmic write() semantics */
 #else
+#ifdef USE_STDIO
+	size_t   _sz = fwrite(buf, 1, count, rrd_simple_file->fp);
+	if (_sz == 0)
+		return -RRD_ERR_WRITE5;
+#else
 	ssize_t   _sz = write(rrd_simple_file->fd, buf, count);
+#endif
 
 	if (_sz > 0)
 		rrd_file->pos += _sz;

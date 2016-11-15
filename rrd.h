@@ -99,6 +99,9 @@ extern    "C" {
 	/* information used for the conventional file access methods */
 	typedef struct rrd_simple_file_t {
 		int       fd;  /* file descriptor of this rrd file */
+#ifdef USE_STDIO
+		FILE*     fp;
+#endif
 #ifdef HAVE_MMAP
 		char     *file_start;   /* start address of an open rrd file */
 		int       mm_prot;

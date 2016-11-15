@@ -572,9 +572,7 @@ int create_hw_contingent_rras(
 
 /* create and empty rrd file according to the specs given */
 
-int rrd_create_fn(
-		const char *file_name,
-		rrd_t *rrd)
+int rrd_create_fn(const char *file_name, rrd_t *rrd)
 {
 	unsigned long i, ii;
 	rrd_value_t *unknown;
@@ -597,7 +595,11 @@ int rrd_create_fn(
 		return ret;
 	}
 
-	rrd_write(rrd_file_dn, rrd->stat_head, sizeof(stat_head_t));
+	if (rrd_write(rrd_file_dn, rrd->stat_head, sizeof(stat_head_t)) < 0){
+		rrd_free2(rrd);
+		rrd_close(rrd_file_dn);
+		return (-RRD_ERR_WRITE5);
+	}
 
 	rrd_write(rrd_file_dn, rrd->ds_def, sizeof(ds_def_t) * rrd->stat_head->ds_cnt);
 

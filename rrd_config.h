@@ -28,10 +28,12 @@
 #define HAVE_DECL_POSIX_FADVISE 1
 #define HAVE_FEATURES_H 1
 #define HAVE_POSIX_FADVISE 1
-#define HAVE_POSIX_FALLOCATE 1
 #define HAVE_DECL_MADVISE 1
 #define HAVE_MADVISE 1
+#undef USE_STDIO
 #endif
+
+#define HAVE_POSIX_FALLOCATE 1
   
 
 /* Define if building universal (internal helper macro) */

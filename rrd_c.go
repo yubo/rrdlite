@@ -6,10 +6,17 @@
 package rrdlite
 
 /*
+ * //-DDEBUG=1     // DEBUG 2 prints information obtained via mincore(2)
+ * //-DUSE_STDIO=1 // use fread() instead of read()
+ * //-DHAVE_MMAP   // enable memory map
+ * //cgo CFLAGS: -std=c99 -DRRD_LITE -D_BSD_SOURCE -DHAVE_CONFIG_H -D_POSIX_SOURCE -DNUMVERS=1.4009 -DUSE_STDIO=1
+ */
+
+/*
 #include <stdlib.h>
 #include "rrd.h"
 #include "rrdfunc.h"
-#cgo CFLAGS: -std=c99 -DRRD_LITE -D_BSD_SOURCE -DHAVE_CONFIG_H -D_POSIX_SOURCE -DNUMVERS=1.4009
+#cgo CFLAGS: -std=c99 -DRRD_LITE -D_BSD_SOURCE -DHAVE_CONFIG_H -D_POSIX_SOURCE -DNUMVERS=1.4009 -DHAVE_MMAP
 #cgo LDFLAGS: -lm
 */
 import "C"

@@ -35,6 +35,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
 
 #include "rrd_error.h"
 
@@ -172,10 +174,16 @@ const char *rrd_strerror(int err) {
 		return NULL;
 	}else{
 		if (e >= RRD_ERR_START &&  e <= RRD_ERR_END){
-			/*printf("errno: 0x%04x, str:%s\n", e, rrd_err_text[e-RRD_ERR_START]);*/
+#ifdef DEBUG
+			printf("errno: 0x%04x, str:%s\n", e, rrd_err_text[e-RRD_ERR_START]);
+			printf("sys errno: %d, strerror:%s\n", errno, strerror(errno));
+#endif
 			return rrd_err_text[e-RRD_ERR_START];
 		}else{
-			/*printf("errno: 0x%04x, str:%s\n", e, rrd_err_text[RRD_ERR_UNKNOWN_ERROR-RRD_ERR_START]);*/
+#ifdef DEBUG
+			printf("errno: 0x%04x, str:%s\n", e, rrd_err_text[RRD_ERR_UNKNOWN_ERROR-RRD_ERR_START]);
+			printf("sys errno: %d, strerror:%s\n", errno, strerror(errno));
+#endif
 			return rrd_err_text[RRD_ERR_UNKNOWN_ERROR-RRD_ERR_START];
 		}
 	}
