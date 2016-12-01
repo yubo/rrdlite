@@ -11,7 +11,7 @@
 # endif
 # define _XOPEN_SOURCE 600
 # define _BSD_SOURCE 1
-# include <features.h>
+//# include <features.h>
 #endif
 
 /* FreeBSD 4.8 wants this included BEFORE sys/types.h */

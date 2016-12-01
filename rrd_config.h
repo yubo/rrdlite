@@ -33,7 +33,7 @@
 #undef USE_STDIO
 #endif
 
-#define HAVE_POSIX_FALLOCATE 1
+//#define HAVE_POSIX_FALLOCATE 1
   
 
 /* Define if building universal (internal helper macro) */

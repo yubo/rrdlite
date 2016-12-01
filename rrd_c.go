@@ -16,8 +16,9 @@ package rrdlite
 #include <stdlib.h>
 #include "rrd.h"
 #include "rrdfunc.h"
-#cgo CFLAGS: -std=c99 -DRRD_LITE -D_BSD_SOURCE -DHAVE_CONFIG_H -D_POSIX_SOURCE -DNUMVERS=1.4009 -DHAVE_MMAP
-#cgo LDFLAGS: -lm
+#cgo linux CFLAGS: -std=c99 -DRRD_LITE -D_BSD_SOURCE -DHAVE_CONFIG_H -D_POSIX_SOURCE -DNUMVERS=1.4009 -DHAVE_MMAP -DHAVE_POSIX_FALLOCATE=1
+#cgo darwin CFLAGS: -DRRD_LITE -D_BSD_SOURCE -DHAVE_CONFIG_H -D_POSIX_SOURCE -DNUMVERS=1.4009
+#cgo LDFLAGS: -lm -lc
 */
 import "C"
 
