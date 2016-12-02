@@ -23,6 +23,7 @@ package rrdlite
 import "C"
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -56,7 +57,7 @@ func makeError(e *C.char) error {
 	if e == null {
 		return nil
 	}
-	return Error(C.GoString(e))
+	return fmt.Errorf("%d:%s", int(C.getErrno()), C.GoString(e))
 }
 
 func (c *Creator) create() error {

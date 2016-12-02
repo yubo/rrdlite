@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <errno.h>
 #include "rrd.h"
 
 const char *rrdCreate(const char *filename, unsigned long step, 
@@ -31,4 +32,8 @@ const char *rrdFetch(int *ret, char *filename, const char *cf, time_t *start,
 
 char *arrayGetCString(char **values, int i) {
 	return values[i];
+}
+
+int getErrno(void){
+	return errno;
 }
